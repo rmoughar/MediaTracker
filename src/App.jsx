@@ -34,7 +34,7 @@ function App() {
   }
 
   function startEdit(item){
-    setEditFormData({title: item.title, year: item.year, type: item.type, tags: []})
+    setEditFormData({title: item.title, year: item.year, type: item.type, tags: item.tags})
     setEditId(item.id);
   }
 
@@ -115,9 +115,10 @@ function App() {
             ))}
             <button type='button' onClick={() => handleTagEditSave()}>Save Tags</button>
             <button type='button' onClick={() => handleTagEditCancel()}>Cancel Edit</button>
-            </>
+          </>
         ) : (
-          globalTags.map(tag => (
+          <>
+          {globalTags.map(tag => (
             <label key={tag}>
             {tag}
             <input type='checkbox' value={tag} onChange={(e) => {
@@ -130,11 +131,14 @@ function App() {
                 setNewItemTags(newItemTags.filter(t => t !== tag));
               }
             }}
+            
             ></input>
           </label>
-          ))
+          ))}
+          <button type="button" onClick={() => startTagEdit()}>Edit Tags</button>
+          </>
         )}
-      <button type="button" onClick={() => startTagEdit()}>Edit Tags</button>
+      
       </form>
 
       <h2>Add New Tags</h2>
