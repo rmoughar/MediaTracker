@@ -14,13 +14,14 @@ function App() {
 
   const [globalTags, setGlobalTags] = useState([]);
   const [tagInput, setTagInput] = useState('');
+  const [newItemTags, setNewItemTags] = useState([]);
 
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Submitting:', { title, year, type });
 
-    const newMedia = {id: Date.now(), title, year, type, tags: []};
+    const newMedia = {id: Date.now(), title, year, type, tags: newItemTags};
     setMediaList([...mediaList, newMedia]);
     
   }
@@ -48,7 +49,9 @@ function App() {
     setEditId(null);
   }
 
-  function handleTagSubmit() {
+  function handleTagSubmit(e) {
+    e.preventDefault();
+
     if(tagInput && !globalTags.includes(tagInput)){
       setGlobalTags([...globalTags, tagInput]);
     }
@@ -69,6 +72,25 @@ function App() {
         <input type="text" id="type" name="type" placeholder='Type' onChange={(e) => setType(e.target.value)}></input>
 
         <input style={{marginLeft: "8px"}} type="submit" value="Submit"/>
+
+        <p>Select Tags:</p>
+        {globalTags.map(tag => (
+          <label key={tag}>
+            {tag}
+            <input type='checkbox' value={tag} onChange={(e) => {
+              const checked = e.target.checked;
+              
+              if(checked){
+                setNewItemTags([...newItemTags, tag]);
+              }
+              else{
+                setNewItemTags(newItemTags.filter(t => t !== tag));
+              }
+            }}
+            ></input>
+          </label>
+
+        ))}
       </form>
 
       <h2>Add New Tags</h2>
@@ -78,6 +100,7 @@ function App() {
 
         <input style={{marginLeft: "8px"}} type="submit" value="Submit"/>
       </form>
+
       <h3>My List</h3>
       <ul>
         {mediaList.map((item) => (
@@ -98,6 +121,9 @@ function App() {
               //Normal Mode
             <>
               {item.title} ({item.year}) - {item.type}
+              <div>
+                Tags: {item.tags.join(", ") || "None"}
+              </div>
               <button onClick={() => startEdit(item)}> Edit</button>
               <button onClick={() => deleteMedia(item.id)}> Delete</button>
             </>
