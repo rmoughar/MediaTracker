@@ -6,18 +6,21 @@ import { useState, useEffect } from 'react';
 function App() {
   const [mediaList, setMediaList] = useState([]); 
   const [editId, setEditId] = useState(null);
-  const [editFormData, setEditFormData] = useState({title:'', year:'', type:''});
+  const [editFormData, setEditFormData] = useState({title:'', year:'', type:'', tags: []});
 
   const [title, setTitle] = useState('');
   const [year, setYear]   = useState('');
   const [type, setType]   = useState('');
+
+  const [globalTags, setGlobalTags] = useState([]);
+  const [tagInput, setTagInput] = useState('');
 
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Submitting:', { title, year, type });
 
-    const newMedia ={id: Date.now(), title, year, type};
+    const newMedia = {id: Date.now(), title, year, type, tags: []};
     setMediaList([...mediaList, newMedia]);
     
   }
@@ -28,7 +31,7 @@ function App() {
   }
 
   function startEdit(item){
-    setEditFormData({title: item.title, year: item.year, type: item.type})
+    setEditFormData({title: item.title, year: item.year, type: item.type, tags: []})
     setEditId(item.id);
   }
 
@@ -36,13 +39,20 @@ function App() {
     
     setMediaList((prevList) => prevList.map((item) => item.id === itemId ? {...item, ...editFormData} : item));
 
-    setEditFormData({title:'', year:'', type:''});
+    setEditFormData({title:'', year:'', type:'', tags: []});
     setEditId(null);
   }
 
   function cancelEdit() {
-    setEditFormData({title:'', year:'', type:''});
+    setEditFormData({title:'', year:'', type:'', tags: []});
     setEditId(null);
+  }
+
+  function handleTagSubmit() {
+    if(tagInput && !globalTags.includes(tagInput)){
+      setGlobalTags([...globalTags, tagInput]);
+    }
+    setTagInput('');
   }
 
   return (
@@ -61,7 +71,14 @@ function App() {
         <input style={{marginLeft: "8px"}} type="submit" value="Submit"/>
       </form>
 
-      <h2>My List</h2>
+      <h2>Add New Tags</h2>
+      <form onSubmit={handleTagSubmit}>
+        <label htmlFor='tag'>Tag: </label>
+        <input type="text" id='title'  name="tag" placeholder='Enter Tag Here' onChange={(e) => setTagInput(e.target.value)}></input>
+
+        <input style={{marginLeft: "8px"}} type="submit" value="Submit"/>
+      </form>
+      <h3>My List</h3>
       <ul>
         {mediaList.map((item) => (
           <li key={item.id}>
