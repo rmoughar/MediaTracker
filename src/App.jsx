@@ -15,6 +15,8 @@ function App() {
   const [globalTags, setGlobalTags] = useState([]);
   const [tagInput, setTagInput] = useState('');
   const [newItemTags, setNewItemTags] = useState([]);
+  const [editTagData, setEditTagData] = useState(globalTags);
+  const [isEditingTags, setisEditingTags] = useState(false);
 
 
   const handleSubmit = (e) => {
@@ -49,6 +51,7 @@ function App() {
     setEditId(null);
   }
 
+
   function handleTagSubmit(e) {
     e.preventDefault();
 
@@ -56,6 +59,29 @@ function App() {
       setGlobalTags([...globalTags, tagInput]);
     }
     setTagInput('');
+  }
+
+  function startTagEdit() {
+    setisEditingTags(true);
+    setEditTagData(globalTags);
+  }
+
+  function handleTagEdit(e, index) {
+    const newList = [...editTagData];
+    newList[index] = e.target.value;
+    setEditTagData(newList);
+  }
+
+  function handleTagEditSave() {
+    setGlobalTags(editTagData);
+
+    setEditTagData(globalTags);
+    setisEditingTags(false);
+  }
+
+  function handleTagEditCancel() {
+    setEditTagData(globalTags);
+    setisEditingTags(false);
   }
 
   return (
@@ -72,10 +98,27 @@ function App() {
         <input type="text" id="type" name="type" placeholder='Type' onChange={(e) => setType(e.target.value)}></input>
 
         <input style={{marginLeft: "8px"}} type="submit" value="Submit"/>
-
+      
         <p>Select Tags:</p>
-        {globalTags.map(tag => (
-          <label key={tag}>
+
+
+        {isEditingTags ? (
+          <>
+          {editTagData.map((tag,index) => (
+              <div key={index}>
+                <input type='text' value={tag} onChange={(e) => handleTagEdit(e, index)}></input>
+                <button type='button' onClick={(e) => {
+                  e.preventDefault();
+                  setEditTagData(editTagData.filter((_, i) => i !== index));
+                }}>❌</button>
+              </div>
+            ))}
+            <button type='button' onClick={() => handleTagEditSave()}>Save Tags</button>
+            <button type='button' onClick={() => handleTagEditCancel()}>Cancel Edit</button>
+            </>
+        ) : (
+          globalTags.map(tag => (
+            <label key={tag}>
             {tag}
             <input type='checkbox' value={tag} onChange={(e) => {
               const checked = e.target.checked;
@@ -89,8 +132,9 @@ function App() {
             }}
             ></input>
           </label>
-
-        ))}
+          ))
+        )}
+      <button type="button" onClick={() => startTagEdit()}>Edit Tags</button>
       </form>
 
       <h2>Add New Tags</h2>
@@ -100,6 +144,7 @@ function App() {
 
         <input style={{marginLeft: "8px"}} type="submit" value="Submit"/>
       </form>
+      
 
       <h3>My List</h3>
       <ul>
