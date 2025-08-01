@@ -1,7 +1,7 @@
 
 //App.jsx
 //testing on mac
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 function App() {
   const [mediaList, setMediaList] = useState([]); 
@@ -17,8 +17,9 @@ function App() {
   const [newItemTags, setNewItemTags] = useState([]);
   const [editTagData, setEditTagData] = useState(globalTags);
   const [isEditingTags, setisEditingTags] = useState(false);
+  const nextTagID = useRef(1);
 
-
+  //Meida Creation
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Submitting:', { title, year, type });
@@ -33,6 +34,7 @@ function App() {
     setMediaList(newArray);
   }
 
+  //Media /Editing
   function startEdit(item){
     setEditFormData({title: item.title, year: item.year, type: item.type, tags: item.tags})
     setEditId(item.id);
@@ -52,30 +54,32 @@ function App() {
   }
 
 
+  //Tag Creation
   function handleTagSubmit(e) {
     e.preventDefault();
 
-    if(tagInput && !globalTags.includes(tagInput)){
+    if(tagInput.label && !globalTags.some(tag => tag.label === tagInput.label)){
       setGlobalTags([...globalTags, tagInput]);
     }
     setTagInput('');
+    nextTagID.current++;
   }
 
   function startTagEdit() {
     setisEditingTags(true);
-    setEditTagData(globalTags);
+    setEditTagData(globalTags.map(tag => ({...tag})));
   }
 
+
+  //Tag Editing
   function handleTagEdit(e, index) {
     const newList = [...editTagData];
-    newList[index] = e.target.value;
+    newList[index] = {...newList[index], label: e.target.value};
     setEditTagData(newList);
   }
 
   function handleTagEditSave() {
     setGlobalTags(editTagData);
-
-    setEditTagData(globalTags);
     setisEditingTags(false);
   }
 
@@ -86,7 +90,16 @@ function App() {
 
   return (
     <div>
-      <h1>Add New Media</h1>
+    <h1>Add New Tags</h1>
+      <form onSubmit={handleTagSubmit}>
+        <label htmlFor='tag'>Tag: </label>
+        <input type="text" id='title'  name="tag" placeholder='Enter Tag Here' onChange={(e) => setTagInput({id: nextTagID.current, label: e.target.value})}></input>
+
+        <input style={{marginLeft: "8px"}} type="submit" value="Submit"/>
+      </form>
+
+    
+      <h2>Add New Media</h2>
       <form onSubmit={handleSubmit}>
         <label htmlFor='title'>Title: </label>
         <input type="text" id="title" name="title" placeholder='Title' onChange={(e) => setTitle(e.target.value)}></input>
@@ -106,7 +119,7 @@ function App() {
           <>
           {editTagData.map((tag,index) => (
               <div key={index}>
-                <input type='text' value={tag} onChange={(e) => handleTagEdit(e, index)}></input>
+                <input type='text' value={tag.label} onChange={(e) => handleTagEdit(e, index)}></input>
                 <button type='button' onClick={(e) => {
                   e.preventDefault();
                   setEditTagData(editTagData.filter((_, i) => i !== index));
@@ -119,16 +132,17 @@ function App() {
         ) : (
           <>
           {globalTags.map(tag => (
-            <label key={tag}>
-            {tag}
-            <input type='checkbox' value={tag} onChange={(e) => {
+            <label key={tag.id}>
+            {tag.label}
+            <input type='checkbox' value={tag.label} onChange={(e) => {
               const checked = e.target.checked;
+              const id = tag.id
               
               if(checked){
-                setNewItemTags([...newItemTags, tag]);
+                setNewItemTags([...newItemTags, id]);
               }
               else{
-                setNewItemTags(newItemTags.filter(t => t !== tag));
+                setNewItemTags(newItemTags.filter(t => t !== id));
               }
             }}
             
@@ -141,13 +155,7 @@ function App() {
       
       </form>
 
-      <h2>Add New Tags</h2>
-      <form onSubmit={handleTagSubmit}>
-        <label htmlFor='tag'>Tag: </label>
-        <input type="text" id='title'  name="tag" placeholder='Enter Tag Here' onChange={(e) => setTagInput(e.target.value)}></input>
-
-        <input style={{marginLeft: "8px"}} type="submit" value="Submit"/>
-      </form>
+      
       
 
       <h3>My List</h3>
@@ -171,7 +179,10 @@ function App() {
             <>
               {item.title} ({item.year}) - {item.type}
               <div>
-                Tags: {item.tags.join(", ") || "None"}
+                Tags: {item.tags.map (id => {
+                  const tag = globalTags.find(t => t.id === id);
+                  return tag ? tag.label : "";
+                }).join(', ')}
               </div>
               <button onClick={() => startEdit(item)}> Edit</button>
               <button onClick={() => deleteMedia(item.id)}> Delete</button>
