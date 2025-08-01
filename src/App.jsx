@@ -6,11 +6,12 @@ import { useState, useEffect, useRef } from 'react';
 function App() {
   const [mediaList, setMediaList] = useState([]); 
   const [editId, setEditId] = useState(null);
-  const [editFormData, setEditFormData] = useState({title:'', year:'', type:'', tags: []});
+  const [editFormData, setEditFormData] = useState({title:'', stat:'', type:'', tags: [], notes: ''});
 
   const [title, setTitle] = useState('');
-  const [year, setYear]   = useState('');
+  const [stat, setStat]   = useState('');
   const [type, setType]   = useState('');
+  const [notes, setNotes] = useState('');
 
   const [globalTags, setGlobalTags] = useState([]);
   const [tagInput, setTagInput] = useState('');
@@ -22,9 +23,8 @@ function App() {
   //Meida Creation
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Submitting:', { title, year, type });
 
-    const newMedia = {id: Date.now(), title, year, type, tags: newItemTags};
+    const newMedia = {id: Date.now(), title, stat, type, tags: newItemTags, notes};
     setMediaList([...mediaList, newMedia]);
     
   }
@@ -36,7 +36,7 @@ function App() {
 
   //Media /Editing
   function startEdit(item){
-    setEditFormData({title: item.title, year: item.year, type: item.type, tags: item.tags})
+    setEditFormData({title: item.title, stat: item.stat, type: item.type, tags: item.tags, notes: item.notes})
     setEditId(item.id);
   }
 
@@ -44,12 +44,12 @@ function App() {
     
     setMediaList((prevList) => prevList.map((item) => item.id === itemId ? {...item, ...editFormData} : item));
 
-    setEditFormData({title:'', year:'', type:'', tags: []});
+    setEditFormData({title:'', stat:'', type:'', tags: [], notes: ''});
     setEditId(null);
   }
 
   function cancelEdit() {
-    setEditFormData({title:'', year:'', type:'', tags: []});
+    setEditFormData({title:'', stat:'', type:'', tags: [], notes: ''});
     setEditId(null);
   }
 
@@ -104,16 +104,16 @@ function App() {
         <label htmlFor='title'>Title: </label>
         <input type="text" id="title" name="title" placeholder='Title' onChange={(e) => setTitle(e.target.value)}></input>
 
-        <label htmlFor='year'>Year: </label>
-        <input type="text" id="year" name="year" placeholder='Year' onChange={(e) => setYear(e.target.value)}></input>
+        <label htmlFor='stat'>Status: </label>
+        <input type="text" id="stat" name="stat" placeholder='Status' onChange={(e) => setStat(e.target.value)}></input>
 
         <label htmlFor='type'>Type: </label>
         <input type="text" id="type" name="type" placeholder='Type' onChange={(e) => setType(e.target.value)}></input>
 
         <input style={{marginLeft: "8px"}} type="submit" value="Submit"/>
       
+      
         <p>Select Tags:</p>
-
 
         {isEditingTags ? (
           <>
@@ -145,7 +145,7 @@ function App() {
                 setNewItemTags(newItemTags.filter(t => t !== id));
               }
             }}
-            
+
             ></input>
           </label>
           ))}
@@ -153,6 +153,10 @@ function App() {
           </>
         )}
       
+                  
+        <p>Add Notes: </p>
+        <input type="text" id="notes" name="notes" placeholder='Notes' onChange={(e) => setNotes(e.target.value)}></input>
+
       </form>
 
       
@@ -167,9 +171,32 @@ function App() {
               <> 
                 <input value={editFormData.title} onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}/>
 
-                <input value={editFormData.year} onChange={(e) => setEditFormData({...editFormData, year: e.target.value})}/>
+                <input value={editFormData.stat} onChange={(e) => setEditFormData({...editFormData, stat: e.target.value})}/>
 
                 <input value={editFormData.type} onChange={(e) => setEditFormData({...editFormData, type: e.target.value})}/> 
+
+                <p>Edit Tags: </p>
+                {globalTags.map(tag => {
+                  const checked = editFormData.tags.includes(tag.id);
+
+                  return(
+                    <label key={tag.id}>
+                      {tag.label}
+                      <input type='checkbox' checked={checked} onChange={(e) => {
+                        const isChecked = e.target.checked;
+                        if(isChecked){
+                          setEditFormData({...editFormData, tags: [...editFormData.tags, tag.id]})
+                        }
+                        else{
+                          setEditFormData({...editFormData, tags: editFormData.tags.filter(id => tag.id !== id)})
+                        }
+                      }}></input></label>
+                  )
+                })}
+
+                <p>Edit Notes: </p>
+                <input value={editFormData.notes} onChange={(e) => setEditFormData({...editFormData, notes: e.target.value})}/>
+
 
                 <button onClick={() => saveEdit(item.id)}> Save</button>
                 <button onClick={cancelEdit}> Cancel</button>
@@ -177,12 +204,16 @@ function App() {
             ) : (
               //Normal Mode
             <>
-              {item.title} ({item.year}) - {item.type}
+              {item.title} ({item.stat}) - {item.type}
               <div>
                 Tags: {item.tags.map (id => {
                   const tag = globalTags.find(t => t.id === id);
                   return tag ? tag.label : "";
                 }).join(', ')}
+              </div>
+              <div>
+                Notes: 
+                {item.notes}
               </div>
               <button onClick={() => startEdit(item)}> Edit</button>
               <button onClick={() => deleteMedia(item.id)}> Delete</button>
