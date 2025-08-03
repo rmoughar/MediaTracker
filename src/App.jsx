@@ -1,6 +1,6 @@
 
 //App.jsx
-//testing on mac
+import './App.css';
 import { useState, useEffect, useRef } from 'react';
 
 function App() {
@@ -89,38 +89,48 @@ function App() {
   }
 
   return (
-    <div>
+    <div className='app-container'>
     <h1>Add New Tags</h1>
       <form onSubmit={handleTagSubmit}>
         <label htmlFor='tag'>Tag: </label>
         <input type="text" id='title'  name="tag" placeholder='Enter Tag Here' onChange={(e) => setTagInput({id: nextTagID.current, label: e.target.value})}></input>
 
-        <input style={{marginLeft: "8px"}} type="submit" value="Submit"/>
+        <button type="submit">Submit</button>
       </form>
+      
+      
 
     
       <h2>Add New Media</h2>
       <form onSubmit={handleSubmit}>
-        <label htmlFor='title'>Title: </label>
-        <input type="text" id="title" name="title" placeholder='Title' onChange={(e) => setTitle(e.target.value)}></input>
+        <div>
+          <div className='form-group'>
+          <label htmlFor='title'>Title: </label>
+          <input type="text" id="title" name="title" placeholder='Title' onChange={(e) => setTitle(e.target.value)}></input>
+          </div>
 
-        <label htmlFor='stat'>Status: </label>
-        <input type="text" id="stat" name="stat" placeholder='Status' onChange={(e) => setStat(e.target.value)}></input>
+          <div className='form-group'>
+          <label htmlFor='stat'> Status: </label>
+          <input type="text" id="stat" name="stat" placeholder='Status' onChange={(e) => setStat(e.target.value)}></input>
+          </div>
 
-        <label htmlFor='type'>Type: </label>
-        <input type="text" id="type" name="type" placeholder='Type' onChange={(e) => setType(e.target.value)}></input>
+          <div className='form-group'>
+          <label htmlFor='type'> Type: </label>
+          <input type="text" id="type" name="type" placeholder='Type' onChange={(e) => setType(e.target.value)}></input>
+          </div>
 
-        <input style={{marginLeft: "8px"}} type="submit" value="Submit"/>
+          <button type="submit">Submit</button>
+        </div>
       
       
-        <p>Select Tags:</p>
+        
 
         {isEditingTags ? (
           <>
           {editTagData.map((tag,index) => (
               <div key={index}>
                 <input type='text' value={tag.label} onChange={(e) => handleTagEdit(e, index)}></input>
-                <button type='button' onClick={(e) => {
+                <button className='x-button' type='button' onClick={(e) => {
                   e.preventDefault();
                   setEditTagData(editTagData.filter((_, i) => i !== index));
                 }}>❌</button>
@@ -130,31 +140,39 @@ function App() {
             <button type='button' onClick={() => handleTagEditCancel()}>Cancel Edit</button>
           </>
         ) : (
-          <>
-          {globalTags.map(tag => (
-            <label key={tag.id}>
-            {tag.label}
-            <input type='checkbox' value={tag.label} onChange={(e) => {
-              const checked = e.target.checked;
-              const id = tag.id
+          <div className='tag-select-box'>
+            <h3>Select Tags:</h3>
+            <div className='tag-grid'>
               
-              if(checked){
-                setNewItemTags([...newItemTags, id]);
-              }
-              else{
-                setNewItemTags(newItemTags.filter(t => t !== id));
-              }
-            }}
-
-            ></input>
-          </label>
-          ))}
-          <button type="button" onClick={() => startTagEdit()}>Edit Tags</button>
-          </>
+              {globalTags.map(tag => (
+                <label key={tag.id} className={`tag-button ${newItemTags.includes(tag.id) ? 'selected' : ''}`}>
+                {tag.label}
+                <input type='checkbox'  value={tag.label} checked={newItemTags.includes(tag.id)} onChange={(e) => {
+                  const checked = e.target.checked;
+                  const id = tag.id
+                  
+                  if(checked){
+                    setNewItemTags([...newItemTags, id]);
+                  }
+                  else{
+                    setNewItemTags(newItemTags.filter(t => t !== id));
+                  }
+                }}
+                hidden
+                ></input>
+              </label>
+              ))}
+              
+            </div>
+            <div className='tag-box-actions'>
+              <button type="button" onClick={() => setNewItemTags([])}>Reset</button>
+              <button type="button" onClick={() => startTagEdit()}>Edit Tags</button>
+            </div>
+          </div>
         )}
       
                   
-        <p>Add Notes: </p>
+        <h3>Add Notes:</h3>
         <input type="text" id="notes" name="notes" placeholder='Notes' onChange={(e) => setNotes(e.target.value)}></input>
 
       </form>
@@ -163,7 +181,6 @@ function App() {
       
 
       <h3>My List</h3>
-      <ul>
         {mediaList.map((item) => (
           <li key={item.id}>
             {editId === item.id ? (
@@ -203,13 +220,16 @@ function App() {
               </>
             ) : (
               //Normal Mode
-            <>
+            <div className='entry'>
               {item.title} ({item.stat}) - {item.type}
               <div>
-                Tags: {item.tags.map (id => {
+                Tags: {
+                item.tags.length > 0 ? item.tags.map (id => {
                   const tag = globalTags.find(t => t.id === id);
                   return tag ? tag.label : "";
-                }).join(', ')}
+                }).join(', ')
+              : "None"
+              }
               </div>
               <div>
                 Notes: 
@@ -217,12 +237,10 @@ function App() {
               </div>
               <button onClick={() => startEdit(item)}> Edit</button>
               <button onClick={() => deleteMedia(item.id)}> Delete</button>
-            </>
+            </div>
             )} 
           </li>
         ))}
-      </ul>
-
     </div>
   );
 }
