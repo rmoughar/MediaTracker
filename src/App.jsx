@@ -60,6 +60,7 @@ function App() {
 
     if(tagInput.label && !globalTags.some(tag => tag.label === tagInput.label)){
       setGlobalTags([...globalTags, tagInput]);
+      
     }
     setTagInput('');
     nextTagID.current++;
@@ -103,23 +104,18 @@ function App() {
     
       <h2>Add New Media</h2>
       <form onSubmit={handleSubmit}>
-        <div>
-          <div className='form-group'>
+        <div className='.new-media'>
+          
           <label htmlFor='title'>Title: </label>
           <input type="text" id="title" name="title" placeholder='Title' onChange={(e) => setTitle(e.target.value)}></input>
-          </div>
-
-          <div className='form-group'>
+          
           <label htmlFor='stat'> Status: </label>
           <input type="text" id="stat" name="stat" placeholder='Status' onChange={(e) => setStat(e.target.value)}></input>
-          </div>
-
-          <div className='form-group'>
+          
           <label htmlFor='type'> Type: </label>
           <input type="text" id="type" name="type" placeholder='Type' onChange={(e) => setType(e.target.value)}></input>
-          </div>
-
-          <button type="submit">Submit</button>
+          
+          
         </div>
       
       
@@ -140,6 +136,7 @@ function App() {
             <button type='button' onClick={() => handleTagEditCancel()}>Cancel Edit</button>
           </>
         ) : (
+          
           <div className='tag-select-box'>
             <h3>Select Tags:</h3>
             <div className='tag-grid'>
@@ -175,6 +172,9 @@ function App() {
         <h3>Add Notes:</h3>
         <input type="text" id="notes" name="notes" placeholder='Notes' onChange={(e) => setNotes(e.target.value)}></input>
 
+        <div className='submit-new-media-box'>
+          <button className= 'submit-new-media-button' type="submit">Add To List</button>
+        </div>
       </form>
 
       
@@ -233,7 +233,7 @@ function App() {
               </div>
               <div>
                 Notes: 
-                {item.notes}
+                {item.notes == '' ? ' None' : [` ` + item.notes]}
               </div>
               <button onClick={() => startEdit(item)}> Edit</button>
               <button onClick={() => deleteMedia(item.id)}> Delete</button>
