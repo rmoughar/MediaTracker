@@ -4,7 +4,28 @@ import './App.css';
 import { useState, useEffect, useRef } from 'react';
 
 function App() {
-  const [mediaList, setMediaList] = useState([]); 
+    //Local Storage Custom Hook
+
+  function getStorageValue(key, defaultValue){
+    const saved = localStorage.getItem(key);
+    const initial = JSON.parse(saved);
+    return initial || defaultValue;
+  }
+
+  const useLocalStorage = (key, defaultValue) => {
+    const [value, setValue] = useState(() => {
+      return getStorageValue(key, defaultValue);
+    });
+
+      useEffect(() => {
+    localStorage.setItem(key, JSON.stringify(value));
+    }, [key, value]);
+
+    return [value, setValue];
+
+  }
+
+  const [mediaList, setMediaList] = useLocalStorage("mediaList", []); 
   const [editId, setEditId] = useState(null);
   const [editFormData, setEditFormData] = useState({title:'', stat:'', type:'', tags: [], notes: ''});
 
@@ -13,12 +34,16 @@ function App() {
   const [type, setType]   = useState('');
   const [notes, setNotes] = useState('');
 
-  const [globalTags, setGlobalTags] = useState([]);
+  const [globalTags, setGlobalTags] = useLocalStorage("globalTags", []);
   const [tagInput, setTagInput] = useState('');
   const [newItemTags, setNewItemTags] = useState([]);
   const [editTagData, setEditTagData] = useState(globalTags);
   const [isEditingTags, setisEditingTags] = useState(false);
-  const nextTagID = useRef(1);
+  const [nextTagID, setNextTagID] = useLocalStorage("nextTagID", 1);
+
+
+
+
 
   //Meida Creation
   const handleSubmit = (e) => {
@@ -63,7 +88,7 @@ function App() {
       
     }
     setTagInput('');
-    nextTagID.current++;
+    setNextTagID(nextTagID + 1);
   }
 
   function startTagEdit() {
@@ -94,7 +119,7 @@ function App() {
     <h1>Add New Tags</h1>
       <form onSubmit={handleTagSubmit}>
         <label htmlFor='tag'>Tag: </label>
-        <input type="text" id='title'  name="tag" placeholder='Enter Tag Here' onChange={(e) => setTagInput({id: nextTagID.current, label: e.target.value})}></input>
+        <input type="text" id='title'  name="tag" placeholder='Enter Tag Here' onChange={(e) => setTagInput({id: nextTagID, label: e.target.value})}></input>
 
         <button type="submit">Submit</button>
       </form>
@@ -181,66 +206,68 @@ function App() {
       
 
       <h3>My List</h3>
+      <div className='media-grid'>
         {mediaList.map((item) => (
           <li key={item.id}>
-            {editId === item.id ? (
-              //Edit Mode where we show input fields instead of plain text
-              <> 
-                <input value={editFormData.title} onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}/>
+                {editId === item.id ? (
+                  //Edit Mode where we show input fields instead of plain text
+                  <div className='entry'> 
+                    <input value={editFormData.title} onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}/>
 
-                <input value={editFormData.stat} onChange={(e) => setEditFormData({...editFormData, stat: e.target.value})}/>
+                    <input value={editFormData.stat} onChange={(e) => setEditFormData({...editFormData, stat: e.target.value})}/>
 
-                <input value={editFormData.type} onChange={(e) => setEditFormData({...editFormData, type: e.target.value})}/> 
+                    <input value={editFormData.type} onChange={(e) => setEditFormData({...editFormData, type: e.target.value})}/> 
 
-                <p>Edit Tags: </p>
-                {globalTags.map(tag => {
-                  const checked = editFormData.tags.includes(tag.id);
+                    <p>Edit Tags: </p>
+                    {globalTags.map(tag => {
+                      const checked = editFormData.tags.includes(tag.id);
 
-                  return(
-                    <label key={tag.id}>
-                      {tag.label}
-                      <input type='checkbox' checked={checked} onChange={(e) => {
-                        const isChecked = e.target.checked;
-                        if(isChecked){
-                          setEditFormData({...editFormData, tags: [...editFormData.tags, tag.id]})
-                        }
-                        else{
-                          setEditFormData({...editFormData, tags: editFormData.tags.filter(id => tag.id !== id)})
-                        }
-                      }}></input></label>
-                  )
-                })}
+                      return(
+                        <label key={tag.id}>
+                          {tag.label}
+                          <input type='checkbox' checked={checked} onChange={(e) => {
+                            const isChecked = e.target.checked;
+                            if(isChecked){
+                              setEditFormData({...editFormData, tags: [...editFormData.tags, tag.id]})
+                            }
+                            else{
+                              setEditFormData({...editFormData, tags: editFormData.tags.filter(id => tag.id !== id)})
+                            }
+                          }}></input></label>
+                      )
+                    })}
 
-                <p>Edit Notes: </p>
-                <input value={editFormData.notes} onChange={(e) => setEditFormData({...editFormData, notes: e.target.value})}/>
+                    <p>Edit Notes: </p>
+                    <input value={editFormData.notes} onChange={(e) => setEditFormData({...editFormData, notes: e.target.value})}/>
 
 
-                <button onClick={() => saveEdit(item.id)}> Save</button>
-                <button onClick={cancelEdit}> Cancel</button>
-              </>
-            ) : (
-              //Normal Mode
-            <div className='entry'>
-              {item.title} ({item.stat}) - {item.type}
-              <div>
-                Tags: {
-                item.tags.length > 0 ? item.tags.map (id => {
-                  const tag = globalTags.find(t => t.id === id);
-                  return tag ? tag.label : "";
-                }).join(', ')
-              : "None"
-              }
-              </div>
-              <div>
-                Notes: 
-                {item.notes == '' ? ' None' : [` ` + item.notes]}
-              </div>
-              <button onClick={() => startEdit(item)}> Edit</button>
-              <button onClick={() => deleteMedia(item.id)}> Delete</button>
-            </div>
-            )} 
+                    <button onClick={() => saveEdit(item.id)}> Save</button>
+                    <button onClick={cancelEdit}> Cancel</button>
+                  </div>
+                ) : (
+                    //Normal Mode
+                  <div className='entry'>
+                    {item.title} ({item.stat}) - {item.type}
+                    <div>
+                      Tags: {
+                      item.tags.length > 0 ? item.tags.map (id => {
+                        const tag = globalTags.find(t => t.id === id);
+                        return tag ? tag.label : "";
+                      }).join(', ')
+                    : "None"
+                    }
+                    </div>
+                    <div>
+                      Notes: 
+                      {item.notes == '' ? ' None' : [` ` + item.notes]}
+                    </div>
+                    <button onClick={() => startEdit(item)}> Edit</button>
+                    <button onClick={() => deleteMedia(item.id)}> Delete</button>
+                  </div>
+                  )} 
           </li>
         ))}
+        </div>
     </div>
   );
 }
