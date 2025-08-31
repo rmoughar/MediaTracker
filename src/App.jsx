@@ -1,7 +1,7 @@
 
 //App.jsx
 import './App.css';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect} from 'react';
 
 function App() {
     //Local Storage Custom Hook
@@ -273,63 +273,3 @@ function App() {
 }
 
 export default App;
-
-
-
-
-
-
-
-/*
-// App.jsx
-import { useState, useEffect } from 'react';
-
-function App() {
-  const [count, setCount] = useState(() => {
-    const storedCount = localStorage.getItem('count');
-    return storedCount !== null ? Number(storedCount) : 0;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('count', count);
-  }, [count]);
-
-  const leftClick = () => setCount(count + 1);
-
-  const rightClick = (e) => {
-    e.preventDefault();
-    return count == 0 ? null : setCount (count-1);
-  }
-
-  return (
-    <div>
-      <h1>Counter: {count}</h1>
-      <button onClick={leftClick} onContextMenu={rightClick}>Adjust</button>
-      <button onClick={() => setCount(0)}>Reset</button> 
-    </div>
-  );
-}
-
-export default App;*/
-
-
-
-
-
-
-
-
-/*function App() {
-
-  return (
-    <Header title="deez nuts"/>
-  );
-}
-
-function Header({title}){
-  return (
-    <h1>This is a Header for {title}</h1>
-  )
-}
-
-export default App*/
